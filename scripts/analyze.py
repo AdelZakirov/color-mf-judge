@@ -93,7 +93,10 @@ def main() -> None:
     win = np.array([m_of[names[a["chosen"]]] for a in main_rows])
     lose = np.array([m_of[names[a["second"] if a["chosen"] == a["first"] else a["first"]]] for a in main_rows])
     print(f"main judgements {len(main_rows)} from {len(people)} participants on {len(images)} images "
-          f"(dropped {len(fast)} under {args.min_rt} ms)\n")
+          f"(dropped {len(fast)} under {args.min_rt} ms)")
+    if len(people) < 10:
+        print(f"WARNING: {len(people)} participants; bootstrap intervals over people are not meaningful yet")
+    print()
 
     def stats(weight: np.ndarray) -> tuple[dict, np.ndarray, np.ndarray]:
         w = np.zeros((len(methods), len(methods)))
@@ -133,8 +136,11 @@ def main() -> None:
         xs = xs[~np.isnan(xs)]
         lo, hi = ci(xs)
         p = min(1.0, 2 * min((xs <= 0.5).mean(), (xs >= 0.5).mean()))
-        v = np.nanvar(one_way[(a, b)][0]) + np.nanvar(one_way[(a, b)][1]) - r * (1 - r) / n
-        half = 1.96 * math.sqrt(max(v, 0.0))
+        vp, vi = np.nanvar(one_way[(a, b)][0]), np.nanvar(one_way[(a, b)][1])
+        # the difference can fall below either one-way variance (few people, or noisy estimates);
+        # it is never allowed to: clustering cannot make the estimate more precise than one way
+        v = max(vp + vi - r * (1 - r) / n, vp, vi)
+        half = 1.96 * math.sqrt(v)
         olo, ohi = max(0.0, r - half), min(1.0, r + half)
         wl, wh = wilson(k, n)
         print(f"{a + ' vs ' + b:<24}{n:>5}{r:>8.1%}{f'[{lo:.1%}, {hi:.1%}]':>20}{p:>7.3f}"
