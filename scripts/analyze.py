@@ -61,6 +61,8 @@ def main() -> None:
 
     names = json.loads((ROOT / "study/methods.json").read_text())["codes"]
     excluded = {} if args.include_excluded else json.loads((ROOT / "study/excluded_sessions.json").read_text())
+    # sessions where the device id does not identify the person (a shared phone)
+    overrides = json.loads((ROOT / "study/participants.json").read_text())
     sessions = {s["id"]: s for s in json.loads((args.results / "sessions.json").read_text())}
     answers = json.loads((args.results / "answers.json").read_text())
 
@@ -84,8 +86,9 @@ def main() -> None:
         print("no judgements left")
         return
 
-    # participant = device (client id), so two sessions on one phone count as one person
-    person = [sessions.get(a["sid"], {}).get("client", a["sid"]) for a in main_rows]
+    # participant = device (client id), so two sessions on one phone count as one person, unless
+    # study/participants.json says a session belongs to someone else
+    person = [overrides.get(a["sid"]) or sessions.get(a["sid"], {}).get("client", a["sid"]) for a in main_rows]
     people, p_idx = np.unique(person, return_inverse=True)
     images, i_idx = np.unique([a["image"] for a in main_rows], return_inverse=True)
     methods = sorted({names[c] for a in main_rows for c in (a["first"], a["second"])})
