@@ -55,7 +55,7 @@ answers; the last screen says whether everything reached the server.
 ```bash
 npx firebase login          # once, as the project owner
 node scripts/fetch_results.mjs   # -> results/sessions.json, results/answers.json
-python3 scripts/analyze.py       # win rates, Wilson CIs, binomial p, Bradley-Terry
+python3 scripts/analyze.py       # win rates with bootstrap CIs, Bradley-Terry
 ```
 
 `analyze.py` drops sessions listed in `study/excluded_sessions.json` (author test runs), sessions
