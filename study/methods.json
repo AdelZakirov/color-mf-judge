@@ -8,7 +8,7 @@
   "685ca9": "negated"
  },
  "sources": {
-  "colormf": "/mnt/IMAGING/WORKSPACE/Adel/cmf/val50k/bdfd_agd_w2_omega2/predictions/seed_1",
+  "colormf": "/mnt/IMAGING/WORKSPACE/Adel/cmf/scratch/hue/bdfd_agd_w2_omega2/predictions/seed_1",
   "ddcolor": "/home/AZA/Projects/side/ColorMF/ddcolor/results/val5k_crop256_pipeline_in512/predictions",
   "ctrlcolor": "/mnt/IMAGING/WORKSPACE/Adel/cmf/baselines/ctrlcolor/val5k/predictions/seed_1",
   "gt": "/home/AZA/Projects/side/ColorMF/data/imagenet_val5k_256/rgb",

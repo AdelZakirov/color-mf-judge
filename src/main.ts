@@ -9,6 +9,8 @@ type Pool = {
   images: string[];
   catch: { methods: [string, string]; images: string[] };
   hero: string;
+  /** real pairs per batch for each method pair; counts sum to BATCH - CATCH_PER_BATCH */
+  design?: { id: string; pairs: [string, string, number][] };
 };
 type Trial = { idx: number; kind: "main" | "catch"; image: string; first: string; second: string };
 type Answer = { chosen: string; rev: number; rt: number };
@@ -68,7 +70,19 @@ function shuffle<T>(xs: T[]): T[] {
   return a;
 }
 
-/** Fresh images first, across sessions on this device; balanced method pairs; random sides. */
+/** Method pairs for one batch, as many of each as pool.design says (equal split without it). */
+function pairPlan(nMain: number): [string, string][] {
+  const d = pool.design;
+  if (d && d.pairs.reduce((s, [, , n]) => s + n, 0) === nMain) {
+    return d.pairs.flatMap(([a, b, n]) => Array.from({ length: n }, (): [string, string] => [a, b]));
+  }
+  const m = pool.methods;
+  const pairs: [string, string][] = [];
+  for (let a = 0; a < m.length; a++) for (let b = a + 1; b < m.length; b++) pairs.push([m[a], m[b]]);
+  return Array.from({ length: nMain }, (_, k) => pairs[k % pairs.length]);
+}
+
+/** Fresh images first, across sessions on this device; method pairs per the design; random sides. */
 function makeBatch(start: number): Trial[] {
   const seen = new Set(read<string[]>("tc.seen") ?? []);
   let fresh = pool.images.filter((i) => !seen.has(i));
@@ -81,10 +95,7 @@ function makeBatch(start: number): Trial[] {
   images.forEach((i) => seen.add(i));
   write("tc.seen", [...seen]);
 
-  const m = pool.methods;
-  const pairs: [string, string][] = [];
-  for (let a = 0; a < m.length; a++) for (let b = a + 1; b < m.length; b++) pairs.push([m[a], m[b]]);
-  const pairSeq = shuffle(Array.from({ length: nMain }, (_, k) => pairs[k % pairs.length]));
+  const pairSeq = shuffle(pairPlan(nMain));
 
   const trials: Omit<Trial, "idx">[] = images.map((image, k) => {
     const [a, b] = Math.random() < 0.5 ? pairSeq[k] : [pairSeq[k][1], pairSeq[k][0]];
@@ -222,6 +233,7 @@ function startSession(name: string) {
     client,
     lang,
     pool: pool.version,
+    design: pool.design?.id ?? "equal",
     ua: navigator.userAgent.slice(0, 300),
     vw: innerWidth,
     vh: innerHeight,

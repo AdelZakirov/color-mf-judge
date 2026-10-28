@@ -22,8 +22,9 @@ from PIL import Image
 
 CMF = Path("/mnt/IMAGING/WORKSPACE/Adel/cmf")
 METHODS = {
-    # B+D + FD (step 25k) + distilled autoguidance w 2, omega 2: the final one-pass model
-    "colormf": CMF / "val50k/bdfd_agd_w2_omega2/predictions/seed_1",
+    # B+D + FD (step 25k) + distilled autoguidance w 2, omega 2: the final one-pass model.
+    # Bit-identical to the val50k run's seed 1, whose predictions were deleted after scoring.
+    "colormf": CMF / "scratch/hue/bdfd_agd_w2_omega2/predictions/seed_1",
     # released DDColor checkpoint through its own pipeline at its native input 512, same 256 crops
     "ddcolor": Path("/home/AZA/Projects/side/ColorMF/ddcolor/results/val5k_crop256_pipeline_in512/predictions"),
     # CtrlColor (IJCV 2025), automatic mode, DDIM 20 steps
@@ -36,6 +37,7 @@ CATCH_EXCLUDE = {
     "ILSVRC2012_val_00002333", "ILSVRC2012_val_00002858", "ILSVRC2012_val_00003963",
     "ILSVRC2012_val_00004015", "ILSVRC2012_val_00004779",
 }
+PAIRS = [("colormf", "ddcolor"), ("colormf", "ctrlcolor"), ("ddcolor", "ctrlcolor")]
 HERO = "ILSVRC2012_val_00002011"  # squirrel monkey on grass, a GT photo shown on the intro screen
 GT = Path("/home/AZA/Projects/side/ColorMF/data/imagenet_val5k_256")
 
@@ -63,6 +65,11 @@ def main() -> None:
     ap.add_argument("--min-cf", type=float, default=5.0, help="skip near-grayscale originals")
     ap.add_argument("--catch-min-cf", type=float, default=30.0, help="negation must be obvious")
     ap.add_argument("--seed", type=int, default=2026)
+    ap.add_argument(
+        "--alloc", default="12,3,3",
+        help="real pairs per batch for colormf-ddcolor, colormf-ctrlcolor, ddcolor-ctrlcolor: the main "
+             "comparison gets most judgements, CtrlColor pairs anchor the Bradley-Terry scale",
+    )
     args = ap.parse_args()
 
     manifest = json.loads((GT / "manifest.json").read_text())["images"]
@@ -93,6 +100,10 @@ def main() -> None:
         # catch pair: [real, negated]
         "catch": {"methods": [codes["gt"], codes["negated"]], "images": sorted(catch_ids)},
         "hero": HERO,
+        "design": {
+            "id": f"alloc-{args.alloc.replace(',', '-')}",
+            "pairs": [[codes[a], codes[b], n] for (a, b), n in zip(PAIRS, map(int, args.alloc.split(",")))],
+        },
     }
     (args.out / "pool.json").write_text(json.dumps(pool, indent=1))
     study = Path(__file__).resolve().parents[1] / "study"
