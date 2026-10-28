@@ -1,0 +1,44 @@
+rules_version = '2';
+
+// Append-only log, no reads from clients. A re-answered trial is a new document with rev + 1;
+// the analysis keeps the latest rev per (sid, idx).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function shortString(v, max) {
+      return v is string && v.size() > 0 && v.size() <= max;
+    }
+
+    match /sessions/{sid} {
+      allow create: if request.resource.data.keys().hasOnly(
+                         ['name', 'client', 'lang', 'pool', 'ua', 'vw', 'vh', 'dpr', 'tz', 'at'])
+                    && request.resource.data.keys().hasAll(['name', 'client', 'pool', 'at'])
+                    && shortString(request.resource.data.name, 40)
+                    && shortString(request.resource.data.client, 40)
+                    && shortString(request.resource.data.pool, 60)
+                    && request.resource.data.at == request.time;
+    }
+
+    match /answers/{aid} {
+      allow create: if request.resource.data.keys().hasOnly(
+                         ['sid', 'idx', 'rev', 'kind', 'image', 'first', 'second', 'chosen',
+                          'layout', 'rt', 'at'])
+                    && request.resource.data.size() == 11
+                    && shortString(request.resource.data.sid, 40)
+                    && request.resource.data.idx is int
+                    && request.resource.data.idx >= 0 && request.resource.data.idx < 1000
+                    && request.resource.data.rev is int
+                    && request.resource.data.rev >= 0 && request.resource.data.rev < 50
+                    && request.resource.data.kind in ['main', 'catch']
+                    && shortString(request.resource.data.image, 40)
+                    && shortString(request.resource.data.first, 20)
+                    && shortString(request.resource.data.second, 20)
+                    && request.resource.data.chosen in [request.resource.data.first,
+                                                        request.resource.data.second]
+                    && request.resource.data.layout in ['row', 'column']
+                    && request.resource.data.rt is int
+                    && request.resource.data.rt >= 0 && request.resource.data.rt < 3600000
+                    && request.resource.data.at == request.time;
+    }
+  }
+}

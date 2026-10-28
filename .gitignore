@@ -1,0 +1,8 @@
+node_modules/
+dist/
+# ImageNet-derived images are rebuilt with scripts/build_pool.py, not redistributed
+public/img/
+results/
+.firebase/
+*.log
+__pycache__/
