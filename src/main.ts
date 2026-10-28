@@ -169,11 +169,13 @@ function renderIntro() {
   screen(
     `<header class="top">${wordmark(true)}${langSwitch()}</header>
     <section class="intro">
-      <figure class="hero" aria-hidden="true">
-        <img class="hero-color" src="${src(pool.catch.methods[0], hero)}" alt="" draggable="false" />
-        <img class="hero-gray" src="${src(pool.catch.methods[0], hero)}" alt="" draggable="false" />
-        <i class="hero-edge"></i>
-      </figure>
+      <div class="hero-box">
+        <figure class="hero" aria-hidden="true">
+          <img class="hero-color" src="${src(pool.catch.methods[0], hero)}" alt="" draggable="false" />
+          <img class="hero-gray" src="${src(pool.catch.methods[0], hero)}" alt="" draggable="false" />
+          <i class="hero-edge"></i>
+        </figure>
+      </div>
       <div class="copy">
         <h1>${t.title}</h1>
         <p class="lead">${t.lead}</p>
@@ -249,7 +251,7 @@ function renderTrial() {
   if (app.className !== "s-trial") {
     screen(
       `<header class="bar">
-        <button class="ghost" data-back aria-label="${t.back}">←<span>${t.back}</span></button>
+        <button class="ghost" data-back><svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg>${t.back}</button>
         <div class="count" aria-live="polite"><b data-n></b><span> / ${BATCH}</span></div>
         ${langSwitch()}
       </header>

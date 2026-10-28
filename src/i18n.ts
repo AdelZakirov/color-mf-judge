@@ -3,8 +3,8 @@ export type Lang = "en" | "ru";
 const en = {
   brand: "true colors",
   title: "Which one looks real?",
-  lead: "Each pair is the same black-and-white photo, colorized two different ways. Tap the version that looks more like a genuine color photograph.",
-  rules: ["20 pairs, about two minutes", "No right answers: go with your first impression", "Judge the whole picture, not one detail"],
+  lead: "Each pair is one black-and-white photo, colorized two ways. Tap the one that looks like a real color photo.",
+  rules: ["20 pairs, about two minutes", "No right answers: go with your first impression"],
   nameLabel: "What should we call you?",
   reroll: "Another name",
   start: "Start",
@@ -32,8 +32,8 @@ const en = {
 const ru: typeof en = {
   brand: "true colors",
   title: "Какое фото настоящее?",
-  lead: "В каждой паре одно и то же чёрно-белое фото, раскрашенное двумя способами. Нажмите на то, которое больше похоже на настоящую цветную фотографию.",
-  rules: ["20 пар, около двух минут", "Правильных ответов нет: доверяйте первому впечатлению", "Смотрите на картинку целиком, а не на одну деталь"],
+  lead: "В паре одно чёрно-белое фото, раскрашенное двумя способами. Выберите то, что похоже на настоящее цветное.",
+  rules: ["20 пар, около двух минут", "Правильных ответов нет, выбирайте сходу"],
   nameLabel: "Как вас называть?",
   reroll: "Другое имя",
   start: "Начать",
